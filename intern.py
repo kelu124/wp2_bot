@@ -1,4 +1,5 @@
 from openpyxl import Workbook
+import openpyxl
 
 flavors = [
     "Social",
@@ -79,18 +80,22 @@ If there is nothing really relevant, just say so. Do not invent anything, and ex
     return background
 
 
-def getWorkbook(CERNA_review):
-    book = Workbook()
+def getWorkbook(CERNA_review,txt):
+    book = openpyxl.load_workbook("template.xlsx")
     F, A = flavors, list(angles.keys())
-    ws = book.active
+    ws = book["review"]
 
     chars = "ABCDEFGH"
     for k in range(len(F)):
         for j in range(len(A)):
             print(F[k], A[j], chars[k], j)
-            ws[chars[k + 1] + str(j + 2)] = CERNA_review[F[k]][A[j]]
-    for k in range(len(F)):
-        ws[chars[k + 1] + "1"] = flavors[k]
-    for j in range(len(A)):
-        ws["A" + str(j + 2)] = A[j]
+            ws[chars[k + 1] + str(2*j + 3)] = CERNA_review[F[k]][A[j]].split("\n")[-1].strip("*").strip()
+            ws[chars[k + 1] + str(2*j + 2)] = CERNA_review[F[k]][A[j]].split("\n")[0].strip("*").strip()
+    if 0:
+        for k in range(len(F)):
+            ws[chars[k + 1] + "1"] = flavors[k]
+        for j in range(len(A)):
+            ws["A" + str(j + 2)] = A[j]
+    ws = book["review"]
+    ws["A1"] = txt
     return book

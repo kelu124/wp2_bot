@@ -33,7 +33,7 @@ if st.button("Process"):
             assessment = h.ask(P,txt,v="gpt-3.5-turbo-16k-0613",ow=False,src="none",seed="")
             CERNA_review[f][a] = assessment
 
-    book = intern.getWorkbook(CERNA_review)
+    book = intern.getWorkbook(CERNA_review,txt)
 
     with NamedTemporaryFile() as tmp:
         book.save(tmp.name)
