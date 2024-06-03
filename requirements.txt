@@ -15,6 +15,7 @@ debugpy==1.8.1
 decorator==5.1.1
 distro==1.9.0
 dnspython==2.6.1
+et-xmlfile==1.1.0
 executing==2.0.1
 fonttools==4.53.0
 fx2==0.13
@@ -44,6 +45,7 @@ numpy==1.26.4
 OAI @ git+https://github.com/kelu124/OAI@cf217aa4c9bfe2a1a6a29b3a50e79290cfb58303
 openai==1.30.5
 opencv-python==4.10.0.82
+openpyxl==3.1.3
 packaging==24.0
 pandas==2.2.2
 parso==0.8.4
@@ -89,3 +91,4 @@ urllib3==2.2.1
 usb==0.0.83.dev0
 watchdog==4.0.1
 wcwidth==0.2.13
+XlsxWriter==3.2.0
