@@ -5,7 +5,7 @@ from io import BytesIO
 from tempfile import NamedTemporaryFile
 from pymongo import MongoClient
 import pandas as pd
-
+import os
 
 st.set_page_config(
     page_title="Cool bot",
@@ -25,6 +25,9 @@ h.db = h.cluster["OAI"]
 h.collection = h.db["OAI_Collection"]
 h.DB = h.collection
 
+if not os.path.exists(h.GOTOCACHE):
+    os.makedirs(h.GOTOCACHE)
+
 st.write("# Cool bot")
 st.sidebar.write("### Debug space")
 st.info("Input below the text to review")
@@ -42,8 +45,8 @@ if st.button("Process"):
         for a in A:
             print(f, a)
             P = intern.createBackground(f, a)
-            #st.sidebar.write(h.GOTOCACHE)
-            #st.sidebar.write(h.DB)
+            # st.sidebar.write(h.GOTOCACHE)
+            # st.sidebar.write(h.DB)
             assessment = h.ask(
                 P, txt, v="gpt-3.5-turbo-16k-0613",
                 ow=False, src="none", seed=""
