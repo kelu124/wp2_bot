@@ -16,6 +16,7 @@ h = OAI.Helper("wp2_assistant")
 
 h.GOTOCACHE = st.secrets["CACHE"]
 h.DBAdress = st.secrets["DB"]
+h.DB = st.secrets["DB"]
 h.PWD = st.secrets["PWD"]
 h.cluster = MongoClient(h.DBAdress)
 h.db = h.cluster["OAI"]
