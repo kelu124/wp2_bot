@@ -12,7 +12,7 @@ st.set_page_config(
 
 
 h = OAI.Helper("wp2_assistant")
-h.GOTOCACHE = "./"
+h.GOTOCACHE = "./.cache/"
 
 st.write("# Cool bot")
 st.sidebar.write("### Debug space")
@@ -32,6 +32,7 @@ if st.button("Process"):
             print(f,a)
             P = intern.createBackground(f, a)
             st.sidebar.write(h.GOTOCACHE )
+            st.sidebar.write(h.DB )
             assessment = h.ask(P,txt,v="gpt-3.5-turbo-16k-0613",ow=False,src="none",seed="")
             CERNA_review[f][a] = assessment
 
