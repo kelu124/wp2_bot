@@ -3,6 +3,7 @@ import OAI
 import intern
 from io import BytesIO
 from tempfile import NamedTemporaryFile
+from pymongo import MongoClient
 
 st.set_page_config(
     page_title="Cool bot",
@@ -12,7 +13,13 @@ st.set_page_config(
 
 
 h = OAI.Helper("wp2_assistant")
-h.GOTOCACHE = "./.cache/"
+
+h.GOTOCACHE = st.secrets["CACHE"]
+h.DBAdress = st.secrets["DB"]
+h.PWD = st.secrets["PWD"]
+h.cluster = MongoClient(h.DBAdress)
+h.db = h.cluster["OAI"]
+h.collection = h.db["OAI_Collection"]
 
 st.write("# Cool bot")
 st.sidebar.write("### Debug space")
@@ -20,8 +27,8 @@ st.info("Input below the text to review")
 txt = st.text_area(
     "Text to analyze",
     intern.CERNA,
-    height = 400,
-    )
+    height=400,
+)
 
 if st.button("Process"):
     CERNA_review = {}
@@ -29,20 +36,22 @@ if st.button("Process"):
     for f in F:
         CERNA_review[f] = {}
         for a in A:
-            print(f,a)
+            print(f, a)
             P = intern.createBackground(f, a)
-            st.sidebar.write(h.GOTOCACHE )
-            st.sidebar.write(h.DB )
-            assessment = h.ask(P,txt,v="gpt-3.5-turbo-16k-0613",ow=False,src="none",seed="")
+            st.sidebar.write(h.GOTOCACHE)
+            st.sidebar.write(h.DB)
+            assessment = h.ask(
+                P, txt, v="gpt-3.5-turbo-16k-0613",
+                ow=False, src="none", seed=""
+            )
             CERNA_review[f][a] = assessment
 
-    book = intern.getWorkbook(CERNA_review,txt)
+    book = intern.getWorkbook(CERNA_review, txt)
 
     with NamedTemporaryFile() as tmp:
         book.save(tmp.name)
         data = BytesIO(tmp.read())
 
-    st.download_button("Retrieve file",
-        data=data,
-        mime='xlsx',
-        file_name="assessment.xlsx")
+    st.download_button(
+        "Retrieve file", data=data, mime="xlsx", file_name="assessment.xlsx"
+    )
