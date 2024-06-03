@@ -12,6 +12,7 @@ st.set_page_config(
 
 
 h = OAI.Helper("wp2_assistant")
+h.GOTOCACHE = "./"
 
 st.write("# Cool bot")
 st.sidebar.write("### Debug space")
