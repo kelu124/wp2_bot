@@ -31,6 +31,7 @@ if st.button("Process"):
         for a in A:
             print(f,a)
             P = intern.createBackground(f, a)
+            st.sidebar.write(h.GOTOCACHE )
             assessment = h.ask(P,txt,v="gpt-3.5-turbo-16k-0613",ow=False,src="none",seed="")
             CERNA_review[f][a] = assessment
 
