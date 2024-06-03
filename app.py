@@ -4,6 +4,8 @@ import intern
 from io import BytesIO
 from tempfile import NamedTemporaryFile
 from pymongo import MongoClient
+import pandas as pd
+
 
 st.set_page_config(
     page_title="Cool bot",
@@ -49,6 +51,8 @@ if st.button("Process"):
             CERNA_review[f][a] = assessment
 
     book = intern.getWorkbook(CERNA_review, txt)
+    df = pd.DataFrame(CERNA_review)
+    st.table(df)
 
     with NamedTemporaryFile() as tmp:
         book.save(tmp.name)
