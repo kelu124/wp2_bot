@@ -6,6 +6,7 @@ from tempfile import NamedTemporaryFile
 from pymongo import MongoClient
 import pandas as pd
 import os
+from fwk_colors import summary, OOI
 
 st.set_page_config(
     page_title="Cool bot",
@@ -37,21 +38,7 @@ txt = st.text_area(
     height=400,
 )
 Q = {}
-if st.button("Process"):
-    CERNA_review = {}
-    F, A = intern.flavors, list(intern.angles.keys())
-    for f in F:
-        CERNA_review[f] = {}
-        for a in A:
-            print(f, a)
-            P = intern.createBackground(f, a)
-            # st.sidebar.write(h.GOTOCACHE)
-            # st.sidebar.write(h.DB)
-            assessment = h.ask(
-                P, txt, v="gpt-3.5-turbo-16k-0613",
-                ow=False, src="none", seed=""
-            )
-            CERNA_review[f][a] = assessment
+if st.sidebar.button("Process",key="Step0"):
 
 
 
@@ -72,7 +59,8 @@ if st.button("Process"):
         PROMPT = PROMPT.replace("QQQ",k)
         MQ = h.ask(PROMPT,txt,v="gpt-3.5-turbo-16k-0613",ow=False,src="none",seed="")
         st.write("### "+k)
-        st.write(MQ)
+
+        MQ = st.text_area(k,MQ,height=170,key=k)
         Q[k] = MQ
     for k in list(Q.keys()):
        ADDINFO = "\n\n* Question: "+k+"\n\n* Answer: "+Q[k]+"\n\n"
@@ -107,8 +95,29 @@ AAA
         st.write(RS)
 
 
+    CERNA_review = {}
+    F, A = intern.flavors, list(intern.angles.keys())
+    CLARIFS = ""
+    for k in list(Q.keys()):
+        CLARIFS += "* __Question__: "+k+"\n"
+        CLARIFS += "* __Answer__: "+Q[k]+"\n\n"
+    for f in F:
+        CERNA_review[f] = {}
+        for a in A:
+            print(f, a)
+            P = intern.createBackground(f, a)
+            # st.sidebar.write(h.GOTOCACHE)
+            # st.sidebar.write(h.DB)
+            assessment = h.ask(
+                P, "## Original text:\n\n"+txt+"\n\n## Additional information\n\n"+CLARIFS, v="gpt-3.5-turbo-16k-0613",
+                ow=False, src="none", seed=""
+            )
+            CERNA_review[f][a] = assessment
+
+    CERNA_review = intern.augmentReview(CERNA_review)
+    
     st.write("# Overview of the table")
-    book = intern.getWorkbook(CERNA_review, txt)
+    book = intern.getWorkbook(CERNA_review, txt, Q)
     df = pd.DataFrame(CERNA_review)
     st.table(df)
 
@@ -116,6 +125,6 @@ AAA
         book.save(tmp.name)
         data = BytesIO(tmp.read())
 
-    st.download_button(
+    st.sidebar.download_button(
         "Retrieve file", data=data, mime="xlsx", file_name="assessment.xlsx"
     )
