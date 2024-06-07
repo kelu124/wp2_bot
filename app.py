@@ -7,6 +7,7 @@ from pymongo import MongoClient
 import pandas as pd
 import os
 from fwk_colors import summary, OOI
+from openai import OpenAI 
 
 st.set_page_config(
     page_title="Cool bot",
@@ -25,7 +26,10 @@ h.cluster = MongoClient(h.DBAdress)
 h.db = h.cluster["OAI"]
 h.collection = h.db["OAI_Collection"]
 h.DB = h.collection
-
+h.CLIENT = OpenAI(
+    api_key=st.secrets["OAI"]
+)
+h.NAME = "WP2 Bot"
 if not os.path.exists(h.GOTOCACHE):
     os.makedirs(h.GOTOCACHE)
 
