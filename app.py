@@ -10,7 +10,7 @@ from fwk_colors import summary, OOI
 from openai import OpenAI 
 
 st.set_page_config(
-    page_title="Cool bot",
+    page_title="Evaluation Assistant (EVA - D2.8)",
     page_icon="🤖",
     layout="wide",
 )

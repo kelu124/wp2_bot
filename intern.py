@@ -71,7 +71,8 @@ Then, add another bulletpoint, and write a short (up to 3 sentences) detailing a
         + """' flavor and the '"""
         + angle
         + """' angle. It must not start with "The text contains" or "This text contains" but rather directly go to the conclusion.
-If there is nothing really relevant, just say so. Do not invent anything, and explain what is missing and what you'd like to see.
+
+If there is nothing really relevant, just say so, by answering "Not relevant". Do not invent anything, and explain what is missing and what you'd like to see.
 
 # Example of answer
 
