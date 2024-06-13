@@ -33,9 +33,11 @@ h.NAME = "WP2 Bot"
 if not os.path.exists(h.GOTOCACHE):
     os.makedirs(h.GOTOCACHE)
 
-st.write("# Cool bot")
-st.sidebar.write("### Debug space")
-st.info("Input below the text to review")
+st.write("# Evaluation Assistant (EVA - D2.8)")
+HTML = '<img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2R2YndpaDYxd2RtMG93ZHQ0ZTZtc2MyeTk4bnU5Y2h4bTB2Y3BnayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlAgJTVaAPHEGdy/giphy.webp" alt="drawing" width="250"/>'
+st.sidebar.html(HTML)
+#st.sidebar.write("### Dev space")
+st.info("Please adapt the text below for an evaluation of the social/behavioral innovation implemented")
 txt = st.text_area(
     "Text to analyze",
     intern.CERNA,
