@@ -28,6 +28,7 @@ h.DB = h.collection
 h.CLIENT = OpenAI(
     api_key=st.secrets["OAI"]
 )
+h.NAME = "WP2 Bot"
 
 def createBackground(flavor, angle):
     background = (
