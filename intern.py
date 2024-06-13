@@ -5,6 +5,7 @@ from fwk_colors import summary, OOI
 import streamlit as st
 import OAI
 from pymongo import MongoClient
+from openai import OpenAI 
 
 flavors = list(flavors_dict)
 
