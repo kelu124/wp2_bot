@@ -111,7 +111,7 @@ def augmentReview(CERNA_review):
             + F[k]
             + "' topic and focus on it.\n\n# Content on which instructions apply:",
             flavorsummary,
-            v="gpt-3.5-turbo-16k-0613",
+            v="gpt-4o-mini",
             ow=False,
             src="none",
             seed="",
@@ -121,7 +121,7 @@ def augmentReview(CERNA_review):
             + OOI[0]
             + "\n\n# Content on which instructions apply:",
             flavorsummary,
-            v="gpt-3.5-turbo-16k-0613",
+            v="gpt-4o-mini",
             ow=False,
             src="none",
             seed="",
@@ -129,7 +129,7 @@ def augmentReview(CERNA_review):
         CERNA_review[F[k]]["output_score"] = h.ask(
             "# Instructions:\n\nRead the following content, and answer 1 if it says 'not satisfactory or irrelevant', 2 if it says 'satisfatory but improvements' and 3 if it says 'highly satisfactory'\n\n# Content on which instructions apply:",
             CERNA_review[F[k]]["output"],
-            v="gpt-3.5-turbo-16k-0613",
+            v="gpt-4o-mini",
             ow=False,
             src="none",
             seed="",
@@ -140,7 +140,7 @@ def augmentReview(CERNA_review):
             + OOI[1]
             + "\n\n# Content on which instructions apply:",
             flavorsummary,
-            v="gpt-3.5-turbo-16k-0613",
+            v="gpt-4o-mini",
             ow=False,
             src="none",
             seed="",
@@ -148,7 +148,7 @@ def augmentReview(CERNA_review):
         CERNA_review[F[k]]["outcome_score"] = h.ask(
             "# Instructions:\n\nRead the following content, and answer 1 if it says 'not satisfactory or irrelevant', 2 if it says 'satisfatory but improvements' and 3 if it says 'highly satisfactory'\n\n# Content on which instructions apply:",
             CERNA_review[F[k]]["outcome"],
-            v="gpt-3.5-turbo-16k-0613",
+            v="gpt-4o-mini",
             ow=False,
             src="none",
             seed="",
@@ -158,7 +158,7 @@ def augmentReview(CERNA_review):
             + OOI[2]
             + "\n\n# Content on which instructions apply:",
             flavorsummary,
-            v="gpt-3.5-turbo-16k-0613",
+            v="gpt-4o-mini",
             ow=False,
             src="none",
             seed="",
@@ -166,7 +166,7 @@ def augmentReview(CERNA_review):
         CERNA_review[F[k]]["impact_score"] = h.ask(
             "# Instructions:\n\nRead the following content, and answer 1 if it says 'not satisfactory or irrelevant', 2 if it says 'satisfatory but improvements' and 3 if it says 'highly satisfactory'\n\n# Content on which instructions apply:",
             CERNA_review[F[k]]["impact"],
-            v="gpt-3.5-turbo-16k-0613",
+            v="gpt-4o-mini",
             ow=False,
             src="none",
             seed="",

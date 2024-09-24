@@ -35,7 +35,7 @@ if not os.path.exists(h.GOTOCACHE):
     os.makedirs(h.GOTOCACHE)
 
 st.write("# Evaluation Assistant (EVA - D2.8)")
-HTML = '<img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExa2R2YndpaDYxd2RtMG93ZHQ0ZTZtc2MyeTk4bnU5Y2h4bTB2Y3BnayZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0HlAgJTVaAPHEGdy/giphy.webp" alt="drawing" width="250"/>'
+HTML = '<img src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQlhoJZrN3D_qPxh-nNb9d9ey1ZSiAls4tGdyX7pOHwivEcckYk" alt="drawing" width="250"/>'
 st.sidebar.html(HTML)
 #st.sidebar.write("### Dev space")
 st.info("Please adapt the text below for an evaluation of the social/behavioral innovation implemented")
@@ -64,7 +64,7 @@ if st.sidebar.button("Process",key="Step0"):
 # Text to review
 """
         PROMPT = PROMPT.replace("QQQ",k)
-        MQ = h.ask(PROMPT,txt,v="gpt-3.5-turbo-16k-0613",ow=False,src="none",seed="")
+        MQ = h.ask(PROMPT,txt,v="gpt-4o-mini",ow=False,src="none",seed="")
         st.write("### "+k)
 
         MQ = st.text_area(k,MQ,height=170,key=k)
@@ -96,7 +96,7 @@ AAA
         PROMPT = PROMPT.replace("QQQ",k)
         PROMPT = PROMPT.replace("AAA",ADDINFO)
         PROMPT = PROMPT.replace("OOO",txt)
-        RS = h.ask(PROMPT,txt,v="gpt-3.5-turbo-16k-0613",ow=False,src="none",seed="")
+        RS = h.ask(PROMPT,txt,v="gpt-4o-mini",ow=False,src="none",seed="")
         Q[k] = RS
         st.write("### "+k)
         st.write(RS)
@@ -116,7 +116,7 @@ AAA
             # st.sidebar.write(h.GOTOCACHE)
             # st.sidebar.write(h.DB)
             assessment = h.ask(
-                P, "## Original text:\n\n"+txt+"\n\n## Additional information\n\n"+CLARIFS, v="gpt-3.5-turbo-16k-0613",
+                P, "## Original text:\n\n"+txt+"\n\n## Additional information\n\n"+CLARIFS, v="gpt-4o-mini",
                 ow=False, src="none", seed=""
             )
             CERNA_review[f][a] = assessment
