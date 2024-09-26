@@ -8,6 +8,8 @@ import pandas as pd
 import os
 from fwk_colors import summary, OOI
 from openai import OpenAI
+import hashlib
+import json
 
 st.set_page_config(
     page_title="Evaluation Assistant (EVA - D2.8)",
@@ -44,11 +46,10 @@ with tab1:
         "Please adapt the text below for an evaluation of the social/behavioral innovation implemented"
     )
 
-    txt = st.text_area(
+    FirstInput = st.text_area(
         "Text to analyze",
         intern.CERNA,
-        height=400,
-        key = "FirstInput"
+        height=400, key = "FirstInput"
     )
     step1 = st.checkbox("I am happy with this text", value=False, key="_step1") 
     if not st.session_state["_step1"]:
@@ -56,13 +57,21 @@ with tab1:
             st.session_state[key] = False
 
 
-with tab2:
+with tab2:  
     if st.session_state["_step1"]:
+
+        if not "STEP1MD5" in  st.session_state.keys():
+            st.session_state["STEP1MD5"] = hashlib.md5(FirstInput.encode('utf-8')).hexdigest()
+            st.rerun()
+        elif hashlib.md5(FirstInput.encode('utf-8')).hexdigest() != st.session_state["STEP1MD5"]:
+            st.session_state["STEP1MD5"] = hashlib.md5(FirstInput.encode('utf-8')).hexdigest()
+            st.rerun()
         Q = {}
 
         st.write("# Mandatory questions")
         with open("questions.txt", "r") as f:
             t = [x.strip() for x in f.read().split("\n") if len(x.strip())]
+        print("## Tab2")
         for k in t:
 
             PROMPT = """# Mission
@@ -75,30 +84,45 @@ with tab2:
     # Text to review
     """
             PROMPT = PROMPT.replace("QQQ", k)
-            MQ = h.ask(PROMPT, txt, v="gpt-4o-mini", ow=False, src="none", seed="")
+            
             st.write("### " + k)
 
+            if not k in st.session_state.keys():
+                MQ = h.ask(PROMPT, st.session_state["FirstInput"] , v="gpt-4o-mini", ow=False, src="none", seed="")
+                
+            else:
+                MQ = st.session_state[k]
+
             MQ = st.text_area(k, MQ, height=170, key=k)
+            
             Q[k] = MQ
+
         for k in list(Q.keys()):
-            ADDINFO = "\n\n* Question: " + k + "\n\n* Answer: " + Q[k] + "\n\n"
+            ADDINFO = "\n\n* Question: " + k + "\n\n* Answer: " + st.session_state[k] + "\n\n"
+        st.session_state["ADDINFO"] = ADDINFO
         step2 = st.checkbox("I am happy with this.", value=False, key="_step2") 
         if not st.session_state["_step2"]:
             for key in ["_step3"]:
                 st.session_state[key] = False
     else:
-        st.warning("You need to validate the previous step -- look towards the end and tick the 'I'm done' button.")
+        st.warning("You need to validate the previous step -- look towards the end, and tick the 'I'm done' button.")
 
 
         
 with tab3:
     if st.session_state["_step1"] and st.session_state["_step2"]:
+        if not "STEP2MD5" in  st.session_state.keys():
+            st.session_state["STEP2MD5"] = hashlib.md5(st.session_state["ADDINFO"].encode('utf-8')).hexdigest()
+            st.rerun()
+        elif hashlib.md5(st.session_state["ADDINFO"].encode('utf-8')).hexdigest() != st.session_state["STEP2MD5"]:
+            st.session_state["STEP2MD5"] = hashlib.md5(st.session_state["ADDINFO"].encode('utf-8')).hexdigest()
+            st.rerun()
 
         st.write("# Report generation")
         with open("report.txt", "r") as f:
             t = [x.strip() for x in f.read().split("\n") if len(x.strip())]
-        for k in t:
-            print(k)
+        print("## Tab3")
+        for k in t: 
             PROMPT = """# Mission
 
     * You are an international expert in behavioural science and social innovation. You are part of a team of experts working on the assessment and evaluation of social or behavioural innovations, which is detailed below. Your communication style is kind, to-the-point and professional.
@@ -117,12 +141,20 @@ with tab3:
 
     """
             PROMPT = PROMPT.replace("QQQ", k)
-            PROMPT = PROMPT.replace("AAA", ADDINFO)
-            PROMPT = PROMPT.replace("OOO", txt)
-            RS = h.ask(PROMPT, txt, v="gpt-4o-mini", ow=False, src="none", seed="")
-            Q[k] = RS
+            PROMPT = PROMPT.replace("AAA", st.session_state["ADDINFO"])
+            PROMPT = PROMPT.replace("OOO", st.session_state["FirstInput"] )
+            
+            
             st.write("#### " + k)
-            txt = st.text_area(
+
+            if not k in st.session_state.keys():
+                RS = h.ask(PROMPT, st.session_state["FirstInput"], v="gpt-4o-mini", ow=False, src="none", seed="")
+                
+            else:
+                RS = st.session_state[k]
+            Q[k] = RS
+
+            st.text_area(
                 k,
                 RS,
                 height=600,
@@ -135,6 +167,7 @@ with tab3:
     else:
         st.warning("You need to validate the previous step -- look towards the end and tick the 'I'm done' button.")
 
+
 with tab4:
     if st.session_state["_step1"] and st.session_state["_step2"]  and st.session_state["_step3"]:
         st.write("# Overview of the table")
@@ -144,18 +177,18 @@ with tab4:
         CLARIFS = ""
         for k in list(Q.keys()):
             CLARIFS += "* __Question__: " + k + "\n"
-            CLARIFS += "* __Answer__: " + Q[k] + "\n\n"
+            CLARIFS += "* __Answer__: " + st.session_state[k] + "\n\n"
         for f in F:
             CERNA_review[f] = {}
             for a in A:
-                print(f, a)
+                #print(f, a)
                 P = intern.createBackground(f, a)
                 # st.sidebar.write(h.GOTOCACHE)
                 # st.sidebar.write(h.DB)
                 assessment = h.ask(
                     P,
                     "## Original text:\n\n"
-                    + txt
+                    + st.session_state["FirstInput"] 
                     + "\n\n## Additional information\n\n"
                     + CLARIFS,
                     v="gpt-4o-mini",
@@ -166,7 +199,9 @@ with tab4:
                 CERNA_review[f][a] = assessment
 
         CERNA_review = intern.augmentReview(CERNA_review)
-        book = intern.getWorkbook(CERNA_review, txt, Q)
+        st.session_state["CERNA_review"] = CERNA_review
+        # Creates excel file
+        book = intern.getWorkbook(CERNA_review, st.session_state["FirstInput"] , Q)
         df = pd.DataFrame(CERNA_review)
 
 
@@ -193,3 +228,15 @@ if st.sidebar.button("Clear everything"):
     clearall()
     st.session_state["_step1"] = False
     st.rerun()
+
+
+SESSION = {}
+for k in st.session_state.keys():
+    SESSION[k] = st.session_state[k]
+
+st.sidebar.download_button(
+    label="Debug log",
+    file_name="data.json",
+    mime="application/json",
+    data=json.dumps(SESSION),
+)
