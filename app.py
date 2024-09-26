@@ -7,7 +7,7 @@ from pymongo import MongoClient
 import pandas as pd
 import os
 from fwk_colors import summary, OOI
-from openai import OpenAI 
+from openai import OpenAI
 
 st.set_page_config(
     page_title="Evaluation Assistant (EVA - D2.8)",
@@ -26,9 +26,7 @@ h.cluster = MongoClient(h.DBAdress)
 h.db = h.cluster["OAI"]
 h.collection = h.db["OAI_Collection"]
 h.DB = h.collection
-h.CLIENT = OpenAI(
-    api_key=st.secrets["OAI"]
-)
+h.CLIENT = OpenAI(api_key=st.secrets["OAI"])
 
 h.NAME = "WP2 Bot"
 if not os.path.exists(h.GOTOCACHE):
@@ -37,17 +35,17 @@ if not os.path.exists(h.GOTOCACHE):
 st.write("# Evaluation Assistant (EVA - D2.8)")
 HTML = '<img src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQlhoJZrN3D_qPxh-nNb9d9ey1ZSiAls4tGdyX7pOHwivEcckYk" alt="drawing" width="250"/>'
 st.sidebar.html(HTML)
-#st.sidebar.write("### Dev space")
-st.info("Please adapt the text below for an evaluation of the social/behavioral innovation implemented")
+# st.sidebar.write("### Dev space")
+st.info(
+    "Please adapt the text below for an evaluation of the social/behavioral innovation implemented"
+)
 txt = st.text_area(
     "Text to analyze",
     intern.CERNA,
     height=400,
 )
 Q = {}
-if st.sidebar.button("Process",key="Step0"):
-
-
+if st.sidebar.button("Process", key="Step0"):
 
     st.write("# Mandatory questions")
     with open("questions.txt", "r") as f:
@@ -63,19 +61,19 @@ if st.sidebar.button("Process",key="Step0"):
 
 # Text to review
 """
-        PROMPT = PROMPT.replace("QQQ",k)
-        MQ = h.ask(PROMPT,txt,v="gpt-4o-mini",ow=False,src="none",seed="")
-        st.write("### "+k)
+        PROMPT = PROMPT.replace("QQQ", k)
+        MQ = h.ask(PROMPT, txt, v="gpt-4o-mini", ow=False, src="none", seed="")
+        st.write("### " + k)
 
-        MQ = st.text_area(k,MQ,height=170,key=k)
+        MQ = st.text_area(k, MQ, height=170, key=k)
         Q[k] = MQ
     for k in list(Q.keys()):
-       ADDINFO = "\n\n* Question: "+k+"\n\n* Answer: "+Q[k]+"\n\n"
+        ADDINFO = "\n\n* Question: " + k + "\n\n* Answer: " + Q[k] + "\n\n"
 
     st.write("# Report generation")
     with open("report.txt", "r") as f:
         t = [x.strip() for x in f.read().split("\n") if len(x.strip())]
-    for k in t: 
+    for k in t:
         PROMPT = """# Mission
 
 * You are an international expert in behavioural science and social innovation. You are part of a team of experts working on the assessment and evaluation of social or behavioural innovations, which is detailed below. Your communication style is kind, to-the-point and professional.
@@ -93,21 +91,20 @@ OOO
 AAA
 
 """
-        PROMPT = PROMPT.replace("QQQ",k)
-        PROMPT = PROMPT.replace("AAA",ADDINFO)
-        PROMPT = PROMPT.replace("OOO",txt)
-        RS = h.ask(PROMPT,txt,v="gpt-4o-mini",ow=False,src="none",seed="")
+        PROMPT = PROMPT.replace("QQQ", k)
+        PROMPT = PROMPT.replace("AAA", ADDINFO)
+        PROMPT = PROMPT.replace("OOO", txt)
+        RS = h.ask(PROMPT, txt, v="gpt-4o-mini", ow=False, src="none", seed="")
         Q[k] = RS
-        st.write("### "+k)
+        st.write("### " + k)
         st.write(RS)
-
 
     CERNA_review = {}
     F, A = intern.flavors, list(intern.angles.keys())
     CLARIFS = ""
     for k in list(Q.keys()):
-        CLARIFS += "* __Question__: "+k+"\n"
-        CLARIFS += "* __Answer__: "+Q[k]+"\n\n"
+        CLARIFS += "* __Question__: " + k + "\n"
+        CLARIFS += "* __Answer__: " + Q[k] + "\n\n"
     for f in F:
         CERNA_review[f] = {}
         for a in A:
@@ -116,13 +113,20 @@ AAA
             # st.sidebar.write(h.GOTOCACHE)
             # st.sidebar.write(h.DB)
             assessment = h.ask(
-                P, "## Original text:\n\n"+txt+"\n\n## Additional information\n\n"+CLARIFS, v="gpt-4o-mini",
-                ow=False, src="none", seed=""
+                P,
+                "## Original text:\n\n"
+                + txt
+                + "\n\n## Additional information\n\n"
+                + CLARIFS,
+                v="gpt-4o-mini",
+                ow=False,
+                src="none",
+                seed="",
             )
             CERNA_review[f][a] = assessment
 
     CERNA_review = intern.augmentReview(CERNA_review)
-    
+
     st.write("# Overview of the table")
     book = intern.getWorkbook(CERNA_review, txt, Q)
     df = pd.DataFrame(CERNA_review)
