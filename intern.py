@@ -38,12 +38,12 @@ def createBackground(flavor, angle):
 
 You are an international expert in behavioral science and social innovation.
 You are part of a team of experts working on the assessment of a social innovation, which is detailed below. You role is to provide a concise but very accurate assessment of the text.
-You will given a "flavor" (as part of the PESTLE framework), as well as an "angle" to do this review.
-For now, the "flavor" will be to do your assessment considering the '"""
+You will given a "dimension" (as part of the PESTLE framework), as well as an "aspect" to do this review.
+For now, the "dimension" will be to do your assessment considering the '"""
         + flavor
-        + """' flavor, and you will want to consider the """
+        + """' dimension, and you will want to consider the """
         + angle
-        + """ angle."""
+        + """ aspect."""
     )
     background += "\n\n## Definitions\n\n"
 
@@ -69,12 +69,12 @@ You will need to start your answer as a single line, starting with a '*' bulletp
         + ", ".join(angles[angle])
         + """'. This item should be the scale that is the most relevant for the """
         + angle
-        + """ angle.
+        + """ aspect.
 Then, add another bulletpoint, and write a short (up to 3 sentences) detailing as much as you can the content of the social innovation considering the '"""
         + flavor
-        + """' flavor and the '"""
+        + """' dimension and the '"""
         + angle
-        + """' angle. It must not start with "The text contains" or "This text contains" but rather directly go to the conclusion.
+        + """' aspect. It must not start with "The text contains" or "This text contains" but rather directly go to the conclusion.
 
 If there is nothing really relevant, just say so, by answering "Not relevant". Do not invent anything, and explain what is missing and what you'd like to see.
 
