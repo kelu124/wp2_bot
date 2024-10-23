@@ -56,12 +56,12 @@ the menu in the top row"""
     )
 
     if not "FirstInput" in st.session_state.keys():
-        MQ = intern.CERNA
+        MQ = ""
     else:
         MQ = st.session_state["FirstInput"]
 
     FirstInput = st.text_area(
-        "Text to analyze", intern.CERNA,
+        "Text to analyze", MQ,
         height=400, key="FirstInput"
     )
     step1 = st.checkbox("I am happy with this text", value=False, key="_step1")
