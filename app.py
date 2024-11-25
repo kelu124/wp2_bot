@@ -10,6 +10,8 @@ from fwk_colors import summary, OOI
 from openai import OpenAI
 import hashlib
 import json
+from saves import get_remote_ip, save_state, load_state
+
 
 st.set_page_config(
     page_title="Evaluation Assistant (EVA - D2.8)",
@@ -30,9 +32,16 @@ h.collection = h.db["OAI_Collection"]
 h.DB = h.collection
 h.CLIENT = OpenAI(api_key=st.secrets["OAI"])
 
+save_db = h.cluster["EVA"]
+save_collection = save_db["EVA_Collection"]
+
 h.NAME = "WP2 Bot"
 if not os.path.exists(h.GOTOCACHE):
     os.makedirs(h.GOTOCACHE)
+
+IP = get_remote_ip()
+if not "localIP" in st.session_state.keys():
+    st.session_state.localIP = IP
 
 st.write("# Evaluation Assistant (EVA - D2.8)")
 HTML = '<img src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQlhoJZrN3D_qPxh-nNb9d9ey1ZSiAls4tGdyX7pOHwivEcckYk" alt="drawing" width="250"/>'
@@ -40,11 +49,24 @@ HTML = '<img src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQlhoJZrN
 
 st.sidebar.image("images/bot.png")
 
+if st.sidebar.button("Restore"):
+    content = load_state(IP, save_collection)
+    for key in content.keys():
+        st.session_state[key] = content[key]
+
+
+
+
 # st.sidebar.write("### Dev space")
 
 tab1, tab2, tab3, tab4 = st.tabs(
     ["🗒️ Step1: Background", "🔎 Step2: Follow-up questions", "🔬 Step 3: Analysis", "📑 Step 4: Review"]
 )
+
+
+
+#print(IP,st.session_state.localIP)
+st.sidebar.markdown("The remote ip is "+str(IP)) #st.session_state["localIP"])
 
 with tab1:
     st.info(
@@ -72,6 +94,7 @@ the menu in the top row"""
 
 with tab2:
     if st.session_state["_step1"]:
+        save_state(str(IP), st.session_state, save_collection)
 
         if not "STEP1MD5" in st.session_state.keys():
             st.session_state["STEP1MD5"] = hashlib.md5(
@@ -150,6 +173,7 @@ activity. When you are done, please tick “I am happy with this” and continue
 
 with tab3:
     if st.session_state["_step1"] and st.session_state["_step2"]:
+        save_state(str(IP), st.session_state, save_collection)
         if not "STEP2MD5" in st.session_state.keys():
             st.session_state["STEP2MD5"] = hashlib.md5(
                 st.session_state["ADDINFO"].encode("utf-8")
@@ -226,6 +250,7 @@ with tab4:
         and st.session_state["_step2"]
         and st.session_state["_step3"]
     ):
+        save_state(str(IP), st.session_state, save_collection)
         st.write("# Final report")
         st.info("""
 
