@@ -1,56 +1,56 @@
 import streamlit as st
-import OAI
+
 import intern
 from io import BytesIO
 from tempfile import NamedTemporaryFile
-from pymongo import MongoClient
+
 import pandas as pd
 import os
 from fwk_colors import summary, OOI
-from openai import OpenAI
+from openpyxl import Workbook
+import openpyxl
+from definitions import flavors_dict, angles_dict, CERNA
+from fwk_colors import summary, OOI
+import streamlit as st
+from openai import OpenAI 
+from langchain.embeddings import CacheBackedEmbeddings
+#from langchain.embeddings import OpenAIEmbeddings
+from langchain_openai import OpenAIEmbeddings
+from langchain.globals import set_llm_cache
+from langchain.cache import SQLiteCache
+import datetime
+import json
 import hashlib
 import json
 from saves import get_remote_ip, save_state, load_state
 
+from dotenv import load_dotenv
+load_dotenv()
+
+import intern
+from intern import ask
+
 
 st.set_page_config(
-    page_title="Evaluation Assistant (EVA - D2.8)",
+    page_title="Evaluation Assistant (EVA - D2.8) v2.0 - Aug 2025",
     page_icon="🤖",
     layout="wide",
 )
 
 
-h = OAI.Helper("wp2_assistant")
-
-h.GOTOCACHE = st.secrets["CACHE"]
-h.DBAdress = st.secrets["DB"]
-h.DB = st.secrets["DB"]
-h.PWD = st.secrets["PWD"]
-h.cluster = MongoClient(h.DBAdress)
-h.db = h.cluster["OAI"]
-h.collection = h.db["OAI_Collection"]
-h.DB = h.collection
-h.CLIENT = OpenAI(api_key=st.secrets["OAI"])
-
-save_db = h.cluster["EVA"]
-save_collection = save_db["EVA_Collection"]
-
-h.NAME = "WP2 Bot"
-if not os.path.exists(h.GOTOCACHE):
-    os.makedirs(h.GOTOCACHE)
 
 IP = get_remote_ip()
 if not "localIP" in st.session_state.keys():
     st.session_state.localIP = IP
 
-st.write("# Evaluation Assistant (EVA - D2.8)")
+st.write("# Evaluation Assistant (EVA - D2.8) v2.0 - Aug 2025")
 HTML = '<img src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQlhoJZrN3D_qPxh-nNb9d9ey1ZSiAls4tGdyX7pOHwivEcckYk" alt="drawing" width="250"/>'
 #st.sidebar.html(HTML)
 
 st.sidebar.image("images/bot.png")
 
 if st.sidebar.button("Restore"):
-    content = load_state(IP, save_collection)
+    content = load_state(IP)
     for key in content.keys():
         st.session_state[key] = content[key]
 
@@ -94,7 +94,7 @@ the menu in the top row"""
 
 with tab2:
     if st.session_state["_step1"]:
-        save_state(str(IP), st.session_state, save_collection)
+        save_state(str(IP), st.session_state)
 
         if not "STEP1MD5" in st.session_state.keys():
             st.session_state["STEP1MD5"] = hashlib.md5(
@@ -136,13 +136,9 @@ activity. When you are done, please tick “I am happy with this” and continue
             st.write("### " + k)
 
             if not k in st.session_state.keys():
-                MQ = h.ask(
+                MQ = ask(
                     PROMPT,
-                    st.session_state["FirstInput"],
-                    v="gpt-4o-mini",
-                    ow=False,
-                    src="none",
-                    seed="",
+                    st.session_state["FirstInput"]
                 )
 
             else:
@@ -173,7 +169,7 @@ activity. When you are done, please tick “I am happy with this” and continue
 
 with tab3:
     if st.session_state["_step1"] and st.session_state["_step2"]:
-        save_state(str(IP), st.session_state, save_collection)
+        save_state(str(IP), st.session_state)
         if not "STEP2MD5" in st.session_state.keys():
             st.session_state["STEP2MD5"] = hashlib.md5(
                 st.session_state["ADDINFO"].encode("utf-8")
@@ -221,13 +217,9 @@ in Step 4: Review”."""
             st.write("#### " + k)
 
             if not k in st.session_state.keys():
-                RS = h.ask(
+                RS = ask(
                     PROMPT,
-                    st.session_state["FirstInput"],
-                    v="gpt-4o-mini",
-                    ow=False,
-                    src="none",
-                    seed="",
+                    st.session_state["FirstInput"]
                 )
 
             else:
@@ -250,7 +242,7 @@ with tab4:
         and st.session_state["_step2"]
         and st.session_state["_step3"]
     ):
-        save_state(str(IP), st.session_state, save_collection)
+        save_state(str(IP), st.session_state)
         st.write("# Final report")
         st.info("""
 
@@ -275,16 +267,12 @@ file and make sure to send it to your Work Package leader.”
                 P = intern.createBackground(f, a)
                 # st.sidebar.write(h.GOTOCACHE)
                 # st.sidebar.write(h.DB)
-                assessment = h.ask(
+                assessment = ask(
                     P,
                     "## Original text:\n\n"
                     + st.session_state["FirstInput"]
                     + "\n\n## Additional information\n\n"
-                    + CLARIFS,
-                    v="gpt-4o-mini",
-                    ow=False,
-                    src="none",
-                    seed="",
+                    + CLARIFS
                 )
                 CERNA_review[f][a] = assessment
 

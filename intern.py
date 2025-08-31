@@ -3,9 +3,12 @@ import openpyxl
 from definitions import flavors_dict, angles_dict, CERNA
 from fwk_colors import summary, OOI
 import streamlit as st
-import OAI
-from pymongo import MongoClient
-from openai import OpenAI 
+from langchain_openai import OpenAI
+from langchain_openai import ChatOpenAI
+from langchain.globals import set_llm_cache
+from langchain.cache import SQLiteCache
+import datetime
+import json
 
 flavors = list(flavors_dict)
 
@@ -14,21 +17,19 @@ angles = {
     "Spatial scope": ["Local", "Regional", "National", "International"],
     "Time Horizon": ["Short term", "Mid term", "Long term"],
 }
+from dotenv import load_dotenv
+load_dotenv()
 
-h = OAI.Helper("wp2_assistant")
 
-h.GOTOCACHE = st.secrets["CACHE"]
-h.DBAdress = st.secrets["DB"]
-h.DB = st.secrets["DB"]
-h.PWD = st.secrets["PWD"]
-h.cluster = MongoClient(h.DBAdress)
-h.db = h.cluster["OAI"]
-h.collection = h.db["OAI_Collection"]
-h.DB = h.collection
-h.CLIENT = OpenAI(
-    api_key=st.secrets["OAI"]
-)
-h.NAME = "WP2 Bot"
+set_llm_cache(SQLiteCache(database_path="cached_states/.langchain.db"))
+
+
+ai = ChatOpenAI(model="gpt-4o-mini", api_key=st.secrets["OAI"])
+
+def ask(partA,partB):
+    answer = ai.invoke(partA + "\n" + partB)
+    return json.loads(answer.model_dump_json())["content"]
+
 
 def createBackground(flavor, angle):
     background = (
@@ -104,72 +105,46 @@ def augmentReview(CERNA_review):
                 + CERNA_review[F[k]][A[j]].split("\n")[-1].strip("*").strip()
                 + "\n"
             )
-        CERNA_review[F[k]]["exec_summary"] = h.ask(
+        CERNA_review[F[k]]["exec_summary"] = ask(
             "# Instructions:\n\n"
             + summary[0]
             + "\n\nIt must be particularly relevant to the '"
             + F[k]
             + "' topic and focus on it.\n\n# Content on which instructions apply:",
-            flavorsummary,
-            v="gpt-4o-mini",
-            ow=False,
-            src="none",
-            seed="",
+            flavorsummary
         )
-        CERNA_review[F[k]]["output"] = h.ask(
+        CERNA_review[F[k]]["output"] = ask(
             "# Instructions:\n\n"
             + OOI[0]
             + "\n\n# Content on which instructions apply:",
-            flavorsummary,
-            v="gpt-4o-mini",
-            ow=False,
-            src="none",
-            seed="",
+            flavorsummary
         )
-        CERNA_review[F[k]]["output_score"] = h.ask(
+        CERNA_review[F[k]]["output_score"] = ask(
             "# Instructions:\n\nRead the following content, and answer 1 if it says 'not satisfactory or irrelevant', 2 if it says 'satisfatory but improvements' and 3 if it says 'highly satisfactory'\n\n# Content on which instructions apply:",
             CERNA_review[F[k]]["output"],
-            v="gpt-4o-mini",
-            ow=False,
-            src="none",
-            seed="",
+            v="gpt-4o-mini"
         )
 
-        CERNA_review[F[k]]["outcome"] = h.ask(
+        CERNA_review[F[k]]["outcome"] = ask(
             "# Instructions:\n\n"
             + OOI[1]
             + "\n\n# Content on which instructions apply:",
-            flavorsummary,
-            v="gpt-4o-mini",
-            ow=False,
-            src="none",
-            seed="",
+            flavorsummary
         )
-        CERNA_review[F[k]]["outcome_score"] = h.ask(
+        CERNA_review[F[k]]["outcome_score"] = ask(
             "# Instructions:\n\nRead the following content, and answer 1 if it says 'not satisfactory or irrelevant', 2 if it says 'satisfatory but improvements' and 3 if it says 'highly satisfactory'\n\n# Content on which instructions apply:",
             CERNA_review[F[k]]["outcome"],
-            v="gpt-4o-mini",
-            ow=False,
-            src="none",
-            seed="",
+            v="gpt-4o-mini"
         )
-        CERNA_review[F[k]]["impact"] = h.ask(
+        CERNA_review[F[k]]["impact"] = ask(
             "# Instructions:\n\n"
             + OOI[2]
             + "\n\n# Content on which instructions apply:",
-            flavorsummary,
-            v="gpt-4o-mini",
-            ow=False,
-            src="none",
-            seed="",
+            flavorsummary
         )
-        CERNA_review[F[k]]["impact_score"] = h.ask(
+        CERNA_review[F[k]]["impact_score"] = ask(
             "# Instructions:\n\nRead the following content, and answer 1 if it says 'not satisfactory or irrelevant', 2 if it says 'satisfatory but improvements' and 3 if it says 'highly satisfactory'\n\n# Content on which instructions apply:",
-            CERNA_review[F[k]]["impact"],
-            v="gpt-4o-mini",
-            ow=False,
-            src="none",
-            seed="",
+            CERNA_review[F[k]]["impact"]
         )
         if len(CERNA_review[F[k]]["impact_score"]) > 3:
             CERNA_review[F[k]]["impact_score"] = CERNA_review[F[k]]["impact_score"][0:1]
