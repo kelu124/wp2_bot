@@ -121,8 +121,7 @@ def augmentReview(CERNA_review):
         )
         CERNA_review[F[k]]["output_score"] = ask(
             "# Instructions:\n\nRead the following content, and answer 1 if it says 'not satisfactory or irrelevant', 2 if it says 'satisfatory but improvements' and 3 if it says 'highly satisfactory'\n\n# Content on which instructions apply:",
-            CERNA_review[F[k]]["output"],
-            v="gpt-4o-mini"
+            CERNA_review[F[k]]["output"]
         )
 
         CERNA_review[F[k]]["outcome"] = ask(
@@ -133,8 +132,7 @@ def augmentReview(CERNA_review):
         )
         CERNA_review[F[k]]["outcome_score"] = ask(
             "# Instructions:\n\nRead the following content, and answer 1 if it says 'not satisfactory or irrelevant', 2 if it says 'satisfatory but improvements' and 3 if it says 'highly satisfactory'\n\n# Content on which instructions apply:",
-            CERNA_review[F[k]]["outcome"],
-            v="gpt-4o-mini"
+            CERNA_review[F[k]]["outcome"] 
         )
         CERNA_review[F[k]]["impact"] = ask(
             "# Instructions:\n\n"
