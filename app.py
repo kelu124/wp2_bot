@@ -1,35 +1,21 @@
-import streamlit as st
-
-import intern
+# © 2025 Smart Innovation Normay, Mott MacDonald  
+# This work is licensed under the Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International License (CC BY-NC-ND 4.0).  
+#  To view a copy of this license, visit https://creativecommons.org/licenses/by-nc-nd/4.0/
+import hashlib
+import os
 from io import BytesIO
 from tempfile import NamedTemporaryFile
-
 import pandas as pd
-import os
-from fwk_colors import summary, OOI
-from openpyxl import Workbook
-import openpyxl
-from definitions import flavors_dict, angles_dict, CERNA
-from fwk_colors import summary, OOI
 import streamlit as st
-from openai import OpenAI 
-from langchain.embeddings import CacheBackedEmbeddings
-#from langchain.embeddings import OpenAIEmbeddings
-from langchain_openai import OpenAIEmbeddings
-from langchain.globals import set_llm_cache
-from langchain.cache import SQLiteCache
-import datetime
-import json
-import hashlib
-import json
-from saves import get_remote_ip, save_state, load_state
-
 from dotenv import load_dotenv
+# Custom library
+import src.fwk_researcher as intern
+from src.fwk_researcher import ask
+from src.saves import get_remote_ip, save_state, load_state
+
 load_dotenv()
-
-import intern
-from intern import ask
-
+os.makedirs(".cache", exist_ok=True)
+os.makedirs(".cached_states", exist_ok=True)
 
 st.set_page_config(
     page_title="Evaluation Assistant (EVA - D2.8) v2.0 - Aug 2025",
@@ -37,56 +23,49 @@ st.set_page_config(
     layout="wide",
 )
 
-
-
 IP = get_remote_ip()
-if not "localIP" in st.session_state.keys():
+if "localIP" not in st.session_state.keys():
     st.session_state.localIP = IP
 
 st.write("# Evaluation Assistant (EVA - D2.8) v2.0 - Aug 2025")
-HTML = '<img src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQlhoJZrN3D_qPxh-nNb9d9ey1ZSiAls4tGdyX7pOHwivEcckYk" alt="drawing" width="250"/>'
-#st.sidebar.html(HTML)
-
-st.sidebar.image("images/bot.png")
+st.sidebar.image("src/bot.png")
 
 if st.sidebar.button("Restore"):
     content = load_state(IP)
     for key in content.keys():
         st.session_state[key] = content[key]
-
-
-
-
-# st.sidebar.write("### Dev space")
+st.sidebar.markdown("The remote ip is " + str(IP))
 
 tab1, tab2, tab3, tab4 = st.tabs(
-    ["🗒️ Step1: Background", "🔎 Step2: Follow-up questions", "🔬 Step 3: Analysis", "📑 Step 4: Review"]
+    [
+        "🗒️ Step1: Background",
+        "🔎 Step2: Follow-up questions",
+        "🔬 Step 3: Analysis",
+        "📑 Step 4: Review",
+    ]
 )
-
-
-
-#print(IP,st.session_state.localIP)
-st.sidebar.markdown("The remote ip is "+str(IP)) #st.session_state["localIP"])
 
 with tab1:
     st.info(
         """The text below should describe the
-purpose, the input, the target group and the expected outcome of the social or behavioural
-innovation you are evaluating. Please read the text and adapt. When you are done, tick “I
-am happy with it” and continue to the follow-up questions in the next section by navigating
+ purpose, the input, the target group and the expected
+ outcome of the social or behavioural
+ innovation you are evaluating. Please read the text
+ and adapt. When you are done, tick “I
+ am happy with it” and continue to the follow-up questions
+ in the next section by navigating
 the menu in the top row"""
     )
 
-    if not "FirstInput" in st.session_state.keys():
+    if "FirstInput" not in st.session_state.keys():
         MQ = ""
     else:
         MQ = st.session_state["FirstInput"]
 
-    FirstInput = st.text_area(
-        "Text to analyze", MQ,
-        height=400, key="FirstInput"
-    )
-    step1 = st.checkbox("I am happy with this text", value=False, key="_step1")
+    FirstInput = st.text_area("Text to analyze", MQ, 
+                              height=400, key="FirstInput")
+    step1 = st.checkbox("I am happy with this text", 
+                        value=False, key="_step1")
     if not st.session_state["_step1"]:
         for key in ["_step2", "_step3"]:
             st.session_state[key] = False
@@ -112,12 +91,13 @@ with tab2:
         Q = {}
 
         st.write("# Follow-up questions")
-        st.info("""In this step, we will make sure that all aspects of the evaluation of the innovation are 
+        st.info(
+            """In this step, we will make sure that all aspects of the evaluation of the innovation are 
 covered. You will be asked 15 questions, and the answers are pre-filled. It is your job to read 
 the answers and adapt the text so that it corresponds to the execution of the innovation 
 activity. When you are done, please tick “I am happy with this” and continue to Step 3”."""
         )
-        with open("questions.txt", "r") as f:
+        with open("src/questions.txt", "r") as f:
             t = [x.strip() for x in f.read().split("\n") if len(x.strip())]
         print("## Tab2")
         for k in t:
@@ -136,19 +116,26 @@ activity. When you are done, please tick “I am happy with this” and continue
             st.write("### " + k)
 
             if not k in st.session_state.keys():
-                MQ = ask(
-                    PROMPT,
-                    st.session_state["FirstInput"]
-                )
+                MQ = ask(PROMPT, st.session_state["FirstInput"])
 
             else:
                 MQ = st.session_state[k]
-            if  "expected impact" in k:
-                MQ = st.text_area(label ="""If you expect no impact on this dimension, please just write “No impact expected”""" , value = MQ, height=170, key=k)
+            if "expected impact" in k:
+                MQ = st.text_area(
+                    label="""If you expect no impact on this dimension, please just write “No impact expected”""",
+                    value=MQ,
+                    height=170,
+                    key=k,
+                )
             elif "time horizon" in k:
-                MQ = st.text_area(label = "Please describe the expected short-term, mid-term and long-term impact (if any)", value = MQ, height=170, key=k)
+                MQ = st.text_area(
+                    label="Please describe the expected short-term, mid-term and long-term impact (if any)",
+                    value=MQ,
+                    height=170,
+                    key=k,
+                )
             else:
-                MQ = st.text_area(label = k, value = MQ, height=170, key=k)
+                MQ = st.text_area(label=k, value=MQ, height=170, key=k)
 
             Q[k] = MQ
 
@@ -183,13 +170,14 @@ with tab3:
                 st.session_state["ADDINFO"].encode("utf-8")
             ).hexdigest()
             st.rerun()
-        st.info("""You will now be presented 
+        st.info(
+            """You will now be presented 
 with the evaluation of the innovation activity. Please go through this and correct the text if 
 needed. When you are done, tick “I am happy with this” and continue to download the report 
 in Step 4: Review”."""
         )
         st.write("# Report generation")
-        with open("report.txt", "r") as f:
+        with open("src/report.txt", "r") as f:
             t = [x.strip() for x in f.read().split("\n") if len(x.strip())]
         print("## Tab3")
         for k in t:
@@ -217,10 +205,7 @@ in Step 4: Review”."""
             st.write("#### " + k)
 
             if not k in st.session_state.keys():
-                RS = ask(
-                    PROMPT,
-                    st.session_state["FirstInput"]
-                )
+                RS = ask(PROMPT, st.session_state["FirstInput"])
 
             else:
                 RS = st.session_state[k]
@@ -229,7 +214,8 @@ in Step 4: Review”."""
             st.text_area(k, RS, height=600, key=k)
             # st.write(RS)
 
-        step3 = st.checkbox("I am happy with this text", value=False, key="_step3")
+        step3 = st.checkbox("I am happy with this text",
+                            value=False, key="_step3")
     else:
         st.warning(
             "You need to validate the previous step -- look towards the end and tick the 'I'm done' button."
@@ -244,7 +230,8 @@ with tab4:
     ):
         save_state(str(IP), st.session_state)
         st.write("# Final report")
-        st.info("""
+        st.info(
+            """
 
 “We have now prepared the final evaluation report for you. The report 
 consists of a summary of 3 key _outputs, outcomes_, and expected _impact_ of the social or 
@@ -253,7 +240,8 @@ implementation of the social or behavioural innovation. and _3 recommendations f
 implementation_ as well as an _evaluation_ and a _colour-coded overview_. Please retrieve the 
 file and make sure to send it to your Work Package leader.”
 
-        """)
+        """
+        )
         CERNA_review = {}
         F, A = intern.flavors, list(intern.angles.keys())
         CLARIFS = ""
@@ -272,14 +260,15 @@ file and make sure to send it to your Work Package leader.”
                     "## Original text:\n\n"
                     + st.session_state["FirstInput"]
                     + "\n\n## Additional information\n\n"
-                    + CLARIFS
+                    + CLARIFS,
                 )
                 CERNA_review[f][a] = assessment
 
         CERNA_review = intern.augmentReview(CERNA_review)
         st.session_state["CERNA_review"] = CERNA_review
         # Creates excel file
-        book = intern.getWorkbook(CERNA_review, st.session_state["FirstInput"], Q)
+        book = intern.getWorkbook(CERNA_review, st.session_state["FirstInput"],
+                                  Q, pathtotemplate="src/template.xlsx")
         df = pd.DataFrame(CERNA_review)
 
         with NamedTemporaryFile() as tmp:
@@ -287,19 +276,21 @@ file and make sure to send it to your Work Package leader.”
             data = BytesIO(tmp.read())
 
         st.download_button(
-            "Retrieve file", data=data, mime="xlsx", file_name="assessment.xlsx"
+            "Retrieve file", data=data, mime="xlsx", 
+            file_name="assessment.xlsx"
         )
 
-        #st.table(df)
+        # st.table(df)
     else:
         st.warning(
-            "You need to validate the previous step -- look towards the end and tick the 'I'm done' button."
+            "You need to validate the previous step -- look towards"
+            "the end and tick the 'I'm done' button."
         )
 
 
 def clearall():
-    for key in st.session_state.keys():
-        del st.session_state[key]
+    for KeyState in st.session_state.keys():
+        del st.session_state[KeyState]
 
 
 if st.sidebar.button("Clear everything"):
@@ -307,15 +298,6 @@ if st.sidebar.button("Clear everything"):
     st.session_state["_step1"] = False
     st.rerun()
 
-
 SESSION = {}
-for k in st.session_state.keys():
-    SESSION[k] = st.session_state[k]
-
-if False:
-    st.sidebar.download_button(
-        label="Debug log",
-        file_name="data.json",
-        mime="application/json",
-        data=json.dumps(SESSION),
-    )
+for KeyState in st.session_state.keys():
+    SESSION[KeyState] = st.session_state[KeyState]
